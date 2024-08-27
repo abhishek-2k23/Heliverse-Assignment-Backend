@@ -4,69 +4,67 @@ import User from "../Models/User.model.js"
 export const getUsers = async (req, res) => {
   try {
     // Get page and limit from query parameters, with default values
-    const page = parseInt(req.query.page) || 1
-    const limit = parseInt(req.query.limit) || 20
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
 
-    //if there is any domain provided
-    const domain = req.query.domain
-    if (domain) {
-      console.log("in the domain")
-      // Calculate the number of documents to skip
-      const skip = (page - 1) * limit
-      try {
-        const users = await User.find({ domain }).skip(skip).limit(limit)
+    // Initialize the filter object
+    let filter = {};
 
-        if (!users.length) {
-          return res.status(404).json({ message: "no data matched" })
-        }
+    // Handle domain filter
+    const domain = req.query.domain;
+    if (domain && domain !== "All") {
+      filter.domain = domain;
+    }
 
-        //total users with that domain
-        const totalUsers = await User.countDocuments({ domain })
+    // Handle availability filter
+    const availability = req.query.availability;
+    if (availability && availability !== "All") {
+      filter.available = availability === "Available";
+    }
 
-        //total page
-        const totalPages = Math.ceil(totalUsers / limit)
-
-        return res.status(200).json({
-          message: `users with domain ${domain} fetched`,
-          totalPages: totalPages,
-          totalUsers: totalUsers,
-          currentPage: page,
-          users: users,
-        })
-      } catch (e) {
-        console.log("Error in fetching domain specific user", e)
-      }
+    // Handle gender filter
+    const gender = req.query.gender;
+    if (gender && gender !== "All") {
+      filter.gender = gender;
     }
 
     // Calculate the number of documents to skip
-    const skip = (page - 1) * limit
+    const skip = (page - 1) * limit;
 
-    // Fetch users with pagination
-    const users = await User.find().skip(skip).limit(limit)
+    // Fetch users based on the filter with pagination
+    const users = await User.find(filter).skip(skip).limit(limit);
 
-    // Get total number of documents
-    const totalUsers = await User.countDocuments()
+    // If no users are found, return a 404 response
+    if (!users.length) {
+      return res.status(404).json({ message: "No data matched" });
+    }
 
-    // Calculate total pages
-    const totalPages = Math.ceil(totalUsers / limit)
+    // Get the total number of users that match the filter
+    const totalUsers = await User.countDocuments(filter);
 
-    //all available domains 
+    // Calculate the total number of pages
+    const totalPages = Math.ceil(totalUsers / limit);
+
+    // Get all distinct domains (this might be useful for your frontend)
     const domain_list = await User.distinct('domain');
 
+    // Return the response with user data and pagination information
     res.status(200).json({
+      message: "Users fetched successfully",
       currentPage: page,
       limit,
       totalPages,
       totalUsers,
       domain_list,
       users,
-    })
+    });
   } catch (error) {
-    res
-      .status(400)
-      .json({ message: "Error fetching users", error: error.message })
+    console.log("Error fetching users:", error);
+    res.status(400).json({ message: "Error fetching users", error: error.message });
   }
-}
+};
+
+
 
 export const searchUser = async (req, res) => {
   try {
@@ -89,24 +87,22 @@ export const searchUser = async (req, res) => {
       .skip(skip)
       .limit(limit)
 
-      //search user with the first and from start of the string only.
+    //search user with the first and from start of the string only.
     const totalUsers = await User.countDocuments({
-      first_name: {$regex: `^${searchTerm}`, $options: 'i'}
+      first_name: { $regex: `^${searchTerm}`, $options: "i" },
     })
     const totalPages = Math.ceil(totalUsers / limit)
 
-    console.log(users, totalUsers);
+    console.log(users, totalUsers)
     // Check if users are found
     if (Array.isArray(users) && users.length > 0) {
-      return res
-        .status(200)
-        .json({
-          message: `users with ${searchTerm} found`,
-          totalPages: totalPages,
-          totalUsers: totalUsers,
-          currentPage: page,
-          users: users,
-        })
+      return res.status(200).json({
+        message: `users with ${searchTerm} found`,
+        totalPages: totalPages,
+        totalUsers: totalUsers,
+        currentPage: page,
+        users: users,
+      })
     } else {
       return res.status(404).json({ message: "No users found " })
     }
