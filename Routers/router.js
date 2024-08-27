@@ -7,12 +7,13 @@ const router = express.Router();
 import { addUser } from '../Controllers/AddUser.controller.js';
 import { updateUser } from '../Controllers/UpdateUser.controller.js';
 import { deleteUser } from '../Controllers/DeleteUser.controller.js';
-import { getUsers } from '../Controllers/GetUser.controller.js';
+import { getUsers, searchUser } from '../Controllers/GetUser.controller.js';
 
 router.post("/users",addUser);
 router.put("/users/:id",updateUser);
 router.delete("/users/:id", deleteUser);
 router.get("/users",getUsers);
+router.get("/users/search",searchUser);
 
 
 //export
