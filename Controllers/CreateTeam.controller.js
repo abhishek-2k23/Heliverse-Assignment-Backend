@@ -12,7 +12,7 @@ export const createTeam = async (req, res) => {
 
         console.log(existingTeam, "check")
         if (existingTeam) {
-            return res.status(400).json({ message: 'Team name already exists' });
+            return res.json({ status: false,message: 'Team name already exists' });
         }
 
         // Create a new team
@@ -21,7 +21,7 @@ export const createTeam = async (req, res) => {
             users: []
         });
         console.log("check 2")
-        return res.status(201).json({ message: 'Team created successfully', team: newTeam });
+        return res.status(201).json({status:true, message: 'Team created successfully', team: newTeam });
 
     } catch (error) {
         return res.status(500).json({ message: 'Error creating team', error: error.message });
