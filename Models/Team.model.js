@@ -1,14 +1,22 @@
-const TeamSchema = new mongoose.Schema({
-    _id: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      auto: true // Automatically generate a unique ID
-    },
-    users: [{
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'User' // Referencing the User model
-    }]
-  });
+import mongoose from "mongoose";
+import { v4 as uuidv4 } from 'uuid';
 
-  const Team = mongoose.model("Team", TeamSchema)
+const teamSchema = new mongoose.Schema({
+  team_id: {
+      type: String,
+      default: uuidv4,
+      unique: true
+  },
+  team_name: {
+      type: String,
+      required: true, // This makes sure team_name cannot be null
+      unique: true
+  },
+  users: []
+}, {
+  timestamps: true
+});
 
-  export default Team;
+const Team = mongoose.model('Team', teamSchema);
+
+export default Team;
