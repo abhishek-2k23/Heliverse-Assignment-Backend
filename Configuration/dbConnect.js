@@ -5,10 +5,7 @@ dotenv.config();
 
 const dbConnection = () =>{
 
-        mongoose.connect(process.env.DB_URL,{
-            useNewUrlParser : true,
-            useUnifiedTopology : true,
-        }).then(() => {console.log("DB connection Done.")})
+        mongoose.connect(process.env.DB_URL).then(() => {console.log("DB connection Done.")})
         .catch(() => console.log("Error in connection of DB"))
    
 }
